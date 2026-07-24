@@ -3168,11 +3168,11 @@ optimize.portfolio <- optimize.portfolio_v2 <- function(
       }
       # penalty for minvar
       if (tmpname == "StdDev") {
-        if (is.null(constraints$turnover_penalty)) {
+        if (is.null(constraints$concentration_penalty)) {
           stopifnot("package:Matrix" %in% search() || requireNamespace("Matrix", quietly = TRUE))
           sigma_value_penalty <- Matrix::nearPD(sigma_value)$mat
         } else {
-          sigma_value_penalty <- sigma_value + diag(constraints$turnover_penalty, N)
+          sigma_value_penalty <- sigma_value + diag(constraints$concentration_penalty, N)
         }
         obj <- CVXR::quad_form(wts - weight_initial, sigma_value_penalty) + 2 * t(wts - weight_initial) %*% sigma_value %*% weight_initial + t(weight_initial) %*% sigma_value %*% weight_initial
       }

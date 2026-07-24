@@ -30,13 +30,13 @@ optimize.portfolio(midcap10, pspecEQS, optimize_method = "CVXR")
 
 ############################## 2. Efficient Frontier ###################################
 # Test 1: minEQS with large turnover target, small penalty
-pspecEQS.TO2s = add.constraint(pspecEQS, type="turnover", turnover_target = 0.7, turnover_penalty = 1e-10)
+pspecEQS.TO2s = add.constraint(pspecEQS, type="turnover", turnover_target = 0.7, concentration_penalty = 1e-10)
 optTO2s = optimize.portfolio(midcap10, pspecEQS.TO2s, optimize_method="CVXR")
 round(optTO2s$weights, 6) # I increased the precision
 optTO2s$opt_values
 
 # Test 2: minEQS with small turnover target, small penalty
-pspecEQS.TO05s = add.constraint(pspecEQS, type="turnover", turnover_target = 0.3, turnover_penalty = 1e-10)
+pspecEQS.TO05s = add.constraint(pspecEQS, type="turnover", turnover_target = 0.3, concentration_penalty = 1e-10)
 optTO05s = optimize.portfolio(midcap10, pspecEQS.TO05s, optimize_method="CVXR")
 round(optTO05s$weights, 6)
 optTO05s$opt_values

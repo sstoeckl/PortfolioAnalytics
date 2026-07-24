@@ -7,7 +7,7 @@
 turnover_constraint(
   type = "turnover",
   turnover_target,
-  turnover_penalty = NULL,
+  concentration_penalty = NULL,
   weight_initial = NULL,
   enabled = TRUE,
   message = FALSE,
@@ -19,7 +19,7 @@ turnover_constraint(
 
 \item{turnover_target}{target turnover value}
 
-\item{turnover_penalty}{optional penalty parameter for turnover constraint}
+\item{concentration_penalty}{optional penalty parameter for turnover constraint}
 
 \item{weight_initial}{optional initial weights vector to compute turnover from}
 
