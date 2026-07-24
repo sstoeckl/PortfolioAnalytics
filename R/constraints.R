@@ -840,11 +840,12 @@ get_constraints <- function(portfolio){
 #' 
 #' pspec <- add.constraint(portfolio=pspec, type="turnover", turnover_target=0.6)
 #' @export
-turnover_constraint <- function(type="turnover", turnover_target, concentration_penalty=NULL, weight_initial=NULL, enabled=TRUE, message=FALSE, ...){
+turnover_constraint <- function(type="turnover", TOC=NULL, turnover_target=NULL, concentration_penalty=0, weight_initial=NULL, enabled=TRUE, message=FALSE, ...){
   Constraint <- constraint_v2(type, enabled=enabled, constrclass="turnover_constraint", ...)
-  Constraint$turnover_target <- turnover_target
+  Constraint$turnover_target <- if (!is.null(turnover_target)) turnover_target else TOC
   Constraint$weight_initial <- weight_initial
   Constraint$concentration_penalty <- concentration_penalty
+  if (is.null(Constraint$turnover_target) & concentration_penalty == 0) stop("Please supply either turnover_target, TOC or concentration_penalty")
   return(Constraint)
 }
 

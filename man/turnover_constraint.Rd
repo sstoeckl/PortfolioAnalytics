@@ -6,8 +6,9 @@
 \usage{
 turnover_constraint(
   type = "turnover",
-  turnover_target,
-  concentration_penalty = NULL,
+  TOC = NULL,
+  turnover_target = NULL,
+  concentration_penalty = 0,
   weight_initial = NULL,
   enabled = TRUE,
   message = FALSE,

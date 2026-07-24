@@ -3159,7 +3159,7 @@ optimize.portfolio <- optimize.portfolio_v2 <- function(
     }
 
     ## turnover constraint
-    if (!is.null(constraints$turnover_target)) {
+    if (!is.null(constraints$turnover_target) | !is.null(constraints$concentration_penalty)) {
       # set weight initial
       if (is.null(constraints$weight_initial)) {
         weight_initial <- rep(1 / N, N)
@@ -3170,13 +3170,15 @@ optimize.portfolio <- optimize.portfolio_v2 <- function(
       if (tmpname == "StdDev") {
         if (is.null(constraints$concentration_penalty)) {
           stopifnot("package:Matrix" %in% search() || requireNamespace("Matrix", quietly = TRUE))
-          sigma_value_penalty <- Matrix::nearPD(sigma_value)$mat
+          sigma_value_penalty <- 0 #Matrix::nearPD(sigma_value)$mat
         } else {
           sigma_value_penalty <- sigma_value + diag(constraints$concentration_penalty, N)
         }
         obj <- CVXR::quad_form(wts - weight_initial, sigma_value_penalty) + 2 * t(wts - weight_initial) %*% sigma_value %*% weight_initial + t(weight_initial) %*% sigma_value %*% weight_initial
       }
-      constraints_cvxr <- append(constraints_cvxr, sum(abs(wts - weight_initial * weight_scale)) <= constraints$turnover_target * weight_scale)
+      if (!is.null(constraints$turnover_target)){
+        constraints_cvxr <- append(constraints_cvxr, sum(abs(wts - weight_initial * weight_scale)) <= constraints$turnover_target * weight_scale)
+      }
     }
 
     # problem

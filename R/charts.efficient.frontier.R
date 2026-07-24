@@ -843,7 +843,7 @@ chart.EfficientFrontierCompare <- function(R, portfolio, risk_type, n.portfolios
     create.legend.labels <- paste("% Increase in Risk =", (out$frontier[1,m.p] - out$frontier[1,1]) * 100 / out$frontier[1,1])
     create.legend.labels <- append(create.legend.labels, paste("% Increase in Return =", (out$frontier[which(x_diff == x_index),2] - out$frontier[1,2]) * 100 / out$frontier[1,2]))
   }
-  if(!is.null(legend.loc)){
+  if(is.null(legend.loc)){
     legend.loc = "bottomright"
   }
   if(is.null(legend.labels)){
