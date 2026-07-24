@@ -836,12 +836,12 @@ chart.EfficientFrontierCompare <- function(R, portfolio, risk_type, n.portfolios
     lines(x=c(out$frontier[which(x_diff == x_index),1], out$frontier[1,m.p]), y = c(out$frontier[which(x_diff == x_index),2], out$frontier[1,2]), lty=lty[4], col=col[4], lwd=lwd[4])
     points(x=c(out$frontier[which(x_diff == x_index),1], out$frontier[1,m.p]), y = c(out$frontier[which(x_diff == x_index),2], out$frontier[1,2]), pch=pch.assets, cex=cex.assets)
     if(labels.assets){
-      text(out$frontier[1,1], out$frontier[1,2], labels = paste("(", out$frontier[1,1], ",", out$frontier[1,2], ")"), pos = 1, cex = cex.assets)
-      text(out$frontier[1,m.p], out$frontier[1,2], labels = paste("(", out$frontier[1,m.p], ",", out$frontier[1,2], ")"), pos = 4, cex = cex.assets)
-      text(out$frontier[which(x_diff == x_index),1], out$frontier[which(x_diff == x_index),2], labels = paste("(", out$frontier[which(x_diff == x_index),1], ",", out$frontier[which(x_diff == x_index),2], ")"), pos = 2, cex = cex.assets)
+      text(out$frontier[1,1], out$frontier[1,2], labels = paste("(", round(out$frontier[1,1], 4), ",", round(out$frontier[1,2], 4), ")"), pos = 1, cex = cex.assets)
+      text(out$frontier[1,m.p], out$frontier[1,2], labels = paste("(", round(out$frontier[1,m.p], 4), ",", round(out$frontier[1,2], 4), ")"), pos = 4, cex = cex.assets)
+      text(out$frontier[which(x_diff == x_index),1], out$frontier[which(x_diff == x_index),2], labels = paste("(", round(out$frontier[which(x_diff == x_index),1], 4), ",", round(out$frontier[which(x_diff == x_index),2], 4), ")"), pos = 2, cex = cex.assets)
     }
-    create.legend.labels <- paste("% Increase in Risk =", (out$frontier[1,m.p] - out$frontier[1,1]) * 100 / out$frontier[1,1])
-    create.legend.labels <- append(create.legend.labels, paste("% Increase in Return =", (out$frontier[which(x_diff == x_index),2] - out$frontier[1,2]) * 100 / out$frontier[1,2]))
+    create.legend.labels <- paste("% Increase in Risk =", round((out$frontier[1,m.p] - out$frontier[1,1]) * 100 / out$frontier[1,1], 2))
+    create.legend.labels <- append(create.legend.labels, paste("% Increase in Return =", round((out$frontier[which(x_diff == x_index),2] - out$frontier[1,2]) * 100 / out$frontier[1,2], 2)))
   }
   if(is.null(legend.loc)){
     legend.loc = "bottomright"
