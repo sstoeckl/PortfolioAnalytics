@@ -40,6 +40,15 @@ gmv_opt <- function(R, constraints, moments, lambda, target, lambda_hhi, conc_gr
   # Check for a target return constraint
   if(!is.na(target)) {
     if(!is.null(target_mean)){
+      # gmv_opt() is internal, but target_mean feeds straight into the
+      # constraint matrix, where a wrong length would be recycled and a
+      # non-numeric coerced. Either way the target return constraint would
+      # be silently wrong, which is the failure mode this argument exists
+      # to remove.
+      if(!is.numeric(target_mean) || length(target_mean) != N)
+        stop(sprintf(paste("target_mean must be a numeric vector with one entry per asset:",
+                           "got %s of length %d, expected length %d"),
+                     class(target_mean)[1], length(target_mean), N))
       # The caller has zeroed out moments$mean for the objective function, but
       # the target return must still be imposed with the expected returns the
       # target was derived from. Otherwise the target is picked on one frontier

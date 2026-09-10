@@ -144,6 +144,20 @@ mv.portf <- add.objective(portfolio = mv.portf, type = "risk", name = "StdDev")
 sample.mu <- colMeans(R)
 sample.sigma <- cov(R)
 
+test_that("gmv_opt rejects a target_mean of the wrong type or length", {
+  cn <- PortfolioAnalytics:::get_constraints(mv.portf)
+  m  <- list(mean = sample.mu, var = sample.sigma)
+  call_it <- function(tm) PortfolioAnalytics:::gmv_opt(
+    R = R, constraints = cn, moments = m, lambda = 1,
+    target = as.numeric(sample.mu %*% rep(1 / length(funds), length(funds))),
+    lambda_hhi = NULL, conc_groups = NULL, solver = "quadprog",
+    target_mean = tm)
+
+  expect_error(call_it(sample.mu[1:2]), "one entry per asset")
+  expect_error(call_it(as.character(sample.mu)), "one entry per asset")
+  expect_no_error(call_it(sample.mu))
+})
+
 test_that("maxSR without momentFUN returns the long-only tangency portfolio", {
   opt <- optimize.portfolio(
     R = R, portfolio = mv.portf,
