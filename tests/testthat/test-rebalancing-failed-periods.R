@@ -207,3 +207,17 @@ test_that("a single optimize.portfolio call keeps the solver status too", {
   expect_false(is.null(opt$solver_status))
   expect_match(opt$solver_status, "positive definite")
 })
+
+test_that("a reason arriving with CRLF does not break the warning across lines", {
+  # The reason is pasted into a one-line message, so any newline a solver puts
+  # in its status text has to be folded away -- carriage returns included.
+  fold <- PortfolioAnalytics:::warn.failed.periods
+  fake <- list(a = simpleError("first line
+second line"),
+               b = structure(list(weights = c(x = 0.5, y = 0.5)),
+                             class = "optimize.portfolio"))
+  msg <- tryCatch(fold(fake), warning = function(w) conditionMessage(w))
+  expect_type(msg, "character")
+  expect_match(msg, "first line second line")
+  expect_false(grepl("first line", msg))
+})

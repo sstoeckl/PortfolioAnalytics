@@ -3332,15 +3332,13 @@ warn.failed.periods <- function(lst){
   shown <- if(length(nm) > 5L) c(nm[1:5], sprintf("and %d more", length(nm) - 5L)) else nm
 
   why <- vapply(lst[failed], failure.reason, character(1))
-  why <- sub("[[:space:]]+$", "", gsub("[
-]+", " ", why))
+  why <- sub("[[:space:]]+$", "", gsub("[\r\n]+", " ", why))
   tab <- sort(table(why), decreasing = TRUE)
   reasons <- paste(sprintf('"%s" (%d)', names(tab), as.integer(tab)), collapse = "; ")
 
   warning(sprintf(
-    "%d of %d rebalancing periods did not produce a portfolio and are NA in the extracted results.
-  Reason: %s
-  Periods: %s",
+    paste0("%d of %d rebalancing periods did not produce a portfolio and are NA ",
+           "in the extracted results.\n  Reason: %s\n  Periods: %s"),
     sum(failed), length(failed), reasons, paste(shown, collapse = ", ")), call. = FALSE)
   invisible(TRUE)
 }
