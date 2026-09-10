@@ -246,6 +246,28 @@ test_that("exact full investment solves and matches quadprog (min variance)", {
   expect_equal(w, ref, tolerance = 1e-6)
 })
 
+test_that("a tight but unequal weight sum stays an interval", {
+  # The equality encoding must fire only when the two bounds are the same
+  # number. A caller who deliberately allows sum(w) in [1 - 1e-9, 1 + 1e-9]
+  # is asking for an interval and must keep it; all.equal() would have
+  # collapsed this one.
+  eps <- 1e-9
+  wide.portf <- add.objective(
+    add.constraint(add.constraint(portfolio.spec(assets = funds),
+                                  type = "weight_sum",
+                                  min_sum = 1 - eps, max_sum = 1 + eps),
+                   type = "long_only"),
+    type = "risk", name = "var")
+  cn <- PortfolioAnalytics:::get_constraints(wide.portf)
+  expect_false(identical(cn$min_sum, cn$max_sum))
+
+  opt <- optimize.portfolio(R = R, portfolio = wide.portf, optimize_method = "ROI")
+  w <- as.numeric(extractWeights(opt))
+  expect_false(anyNA(w))
+  expect_gte(sum(w), 1 - eps - 1e-10)
+  expect_lte(sum(w), 1 + eps + 1e-10)
+})
+
 test_that("exact full investment solves on every rolling window it used to fail on", {
   win <- 18L
   fi.portf <- add.objective(
@@ -253,7 +275,10 @@ test_that("exact full investment solves on every rolling window it used to fail 
                                   type = "full_investment"),
                    type = "long_only"),
     type = "risk", name = "var")
-  starts <- seq(1L, 80L, by = 1L)
+  # Derive the range from the data rather than hard-coding it, so the test
+  # cannot run past the end if edhec ever changes length, and so it covers
+  # every window of this width.
+  starts <- seq_len(nrow(edhec) - win + 1L)
   bad <- vapply(starts, function(i) {
     o <- try(optimize.portfolio(R = edhec[i:(i + win - 1L), ], portfolio = fi.portf,
                                 optimize_method = "ROI"), silent = TRUE)
