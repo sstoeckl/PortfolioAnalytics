@@ -56,10 +56,10 @@ gmv_opt <- function(R, constraints, moments, lambda, target, lambda_hhi, conc_gr
   # constraint as a single equality row avoids the degeneracy.
   if(!is.null(constraints$min_sum) && !is.null(constraints$max_sum) &&
      is.finite(constraints$min_sum) && is.finite(constraints$max_sum) &&
-     isTRUE(all.equal(constraints$min_sum, constraints$max_sum))){
+     isTRUE(constraints$min_sum == constraints$max_sum)){
     Amat <- rbind(Amat, rep(1, N))
     dir.vec <- c(dir.vec, "==")
-    rhs.vec <- c(rhs.vec, constraints$max_sum)
+    rhs.vec <- c(rhs.vec, constraints$min_sum)
   } else {
     Amat <- rbind(Amat, rep(1, N), rep(-1, N))
     dir.vec <- c(dir.vec, ">=",">=")
