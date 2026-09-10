@@ -14,8 +14,15 @@
 #' @param conc_groups list of vectors specifying the groups of the assets.
 #' @param solver solver to use
 #' @param control list of solver control parameters
+#' @param target_mean optional vector of expected returns used to impose the
+#' target return constraint. This is required when the linear term of the
+#' quadratic objective is deliberately zeroed out (as the maximum Sharpe Ratio
+#' solver does) but the target return must still be imposed with the expected
+#' returns that the target was derived from. If \code{NULL} (the default) the
+#' expected returns in \code{moments$mean} are used, falling back to the sample
+#' column means of \code{R} when \code{moments$mean} is all zero.
 #' @author Ross Bennett
-gmv_opt <- function(R, constraints, moments, lambda, target, lambda_hhi, conc_groups, solver="quadprog", control=NULL){
+gmv_opt <- function(R, constraints, moments, lambda, target, lambda_hhi, conc_groups, solver="quadprog", control=NULL, target_mean=NULL){
   if (!"package:ROI" %in% search() && !requireNamespace("ROI", quietly = TRUE))
     stop("Package 'ROI' is required but not installed. ",
          "Install it with: install.packages('ROI')", call. = FALSE)
@@ -32,8 +39,14 @@ gmv_opt <- function(R, constraints, moments, lambda, target, lambda_hhi, conc_gr
   
   # Check for a target return constraint
   if(!is.na(target)) {
-    # If var is the only objective specified, then moments$mean won't be calculated
-    if(all(moments$mean==0)){
+    if(!is.null(target_mean)){
+      # The caller has zeroed out moments$mean for the objective function, but
+      # the target return must still be imposed with the expected returns the
+      # target was derived from. Otherwise the target is picked on one frontier
+      # and imposed on another.
+      tmp_means <- target_mean
+    } else if(all(moments$mean==0)){
+      # If var is the only objective specified, then moments$mean won't be calculated
       tmp_means <- colMeans(R)
     } else {
       tmp_means <- moments$mean
