@@ -85,3 +85,52 @@ test_that("maxSR.lo.DE objective measure mean is numeric", {
 test_that("maxSR.lo.DE objective measure StdDev is numeric", {
   expect_true(is.numeric(extractObjectiveMeasures(maxSR.lo.DE)$StdDev))
 })
+
+# --- An exact full investment constraint must not be degenerate -------------
+#
+# gmv_opt() used to encode min_sum == max_sum as two opposing inequality rows
+# (sum(w) >= 1 and -sum(w) >= -1).  Both are always active and linearly
+# dependent, which makes quadprog's active set rank deficient; it then fails
+# with "constraints are inconsistent, no solution!" on problems whose entire
+# constraint set is sum(w) = 1 and 0 <= w <= 1.  ROI does not propagate that
+# error, it returns a solution of NAs, so optimize.portfolio silently produced
+# an all-NA weight vector.
+
+test_that("exact full investment solves and matches quadprog (min variance)", {
+  Rw <- edhec[3:20, ]  # 18 months, 13 series: a window that used to fail
+  fi.portf <- add.objective(
+    add.constraint(add.constraint(portfolio.spec(assets = colnames(Rw)),
+                                  type = "full_investment"),
+                   type = "long_only"),
+    type = "risk", name = "var")
+  cn <- PortfolioAnalytics:::get_constraints(fi.portf)
+  expect_equal(cn$min_sum, cn$max_sum)
+
+  opt <- optimize.portfolio(R = Rw, portfolio = fi.portf, optimize_method = "ROI")
+  w <- as.numeric(extractWeights(opt))
+  expect_false(anyNA(w))
+  expect_equal(sum(w), 1, tolerance = 1e-8)
+  expect_gte(min(w), -1e-8)
+
+  N <- ncol(Rw)
+  ref <- quadprog::solve.QP(
+    Dmat = 2 * cov(Rw), dvec = rep(0, N),
+    Amat = cbind(rep(1, N), diag(N)), bvec = c(1, rep(0, N)), meq = 1)$solution
+  expect_equal(w, ref, tolerance = 1e-6)
+})
+
+test_that("exact full investment solves on every rolling window it used to fail on", {
+  win <- 18L
+  fi.portf <- add.objective(
+    add.constraint(add.constraint(portfolio.spec(assets = colnames(edhec)),
+                                  type = "full_investment"),
+                   type = "long_only"),
+    type = "risk", name = "var")
+  starts <- seq(1L, 80L, by = 1L)
+  bad <- vapply(starts, function(i) {
+    o <- try(optimize.portfolio(R = edhec[i:(i + win - 1L), ], portfolio = fi.portf,
+                                optimize_method = "ROI"), silent = TRUE)
+    inherits(o, "try-error") || anyNA(extractWeights(o))
+  }, logical(1))
+  expect_equal(sum(bad), 0L)
+})
