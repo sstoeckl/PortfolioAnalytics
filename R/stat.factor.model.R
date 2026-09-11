@@ -44,13 +44,30 @@ statistical.factor.model <- function(R, k=1, ...){
   m <- nrow(R)
   N <- ncol(R)
   
-  # checks for R
-  if(m < N) stop("fewer observations than assets")
   x <- coredata(R)
   
   # Make sure k is an integer
   if(k <= 0) stop("k must be a positive integer")
   k <- as.integer(k)
+  
+  # The model is a principal component decomposition, and that does not
+  # require more observations than assets. prcomp() returns min(m, N)
+  # components, of which min(m - 1, N) carry variance once the data has
+  # been centred. What the fit needs is k of those, so k is what is
+  # checked. Requiring m >= N refused exactly the case the model is for:
+  # a universe wider than its history, where the sample covariance is
+  # singular and a factor structure is the usual way out.
+  #
+  # The binding limit is one below that: extractCovariance() divides the
+  # residual sums of squares by m - k - 1, so k = m - 1 returns an
+  # infinite covariance rather than an error.
+  max_k <- min(m - 2L, N)
+  if(max_k < 1L)
+    stop("at least three observations are needed to fit a factor model")
+  if(k > max_k)
+    stop(sprintf(paste("k = %d is more factors than the data supports:",
+                       "%d observations and %d assets give at most %d"),
+                 k, m, N, max_k))
   
   # Fit a statistical factor model using Principal Component Analysis (PCA)
   fit <- prcomp(x, ...=...)
