@@ -61,6 +61,22 @@ test_that("the asset count is the other half of the bound", {
                tolerance = 1e-12)
 })
 
+test_that("the square case k = N = m is refused, and that is a change", {
+  # master ran this one: a full basis reconstructs the data, the residuals are
+  # zero, and the negative denominator m - k - 1 = -1 has nothing to divide,
+  # so extractCovariance() came back with the sample covariance of a square
+  # panel -- finite, and singular, which is the case a factor model exists to
+  # avoid. It is refused here deliberately. Admitting it would make the
+  # admissible set stop being an interval: one more observation, m = N + 1
+  # with k = N, divides by zero instead.
+  square <- R[seq_len(ncol(R)), ]       # m = N = 8
+  expect_error(statistical.factor.model(square, k = ncol(square)),
+               "requests more factors than the data supports")
+  expect_error(statistical.factor.model(R[seq_len(ncol(R) + 1L), ], k = ncol(R)),
+               "requests more factors than the data supports")
+  expect_no_error(statistical.factor.model(square, k = ncol(square) - 2L))
+})
+
 test_that("every accepted k yields a finite covariance", {
   # The bound exists for this reason, so check the reason rather than
   # only the boundary.

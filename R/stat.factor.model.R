@@ -65,7 +65,7 @@ statistical.factor.model <- function(R, k=1, ...){
   if(max_k < 1L)
     stop("at least three observations are needed to fit a factor model")
   if(k > max_k)
-    stop(sprintf(paste("k = %d is more factors than the data supports:",
+    stop(sprintf(paste("k = %d requests more factors than the data supports:",
                        "%d observations and %d assets give at most %d"),
                  k, m, N, max_k))
   
