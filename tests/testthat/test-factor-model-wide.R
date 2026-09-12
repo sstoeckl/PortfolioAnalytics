@@ -41,6 +41,26 @@ test_that("k is bounded by the components the data supports, not by N", {
                "more factors than the data supports")
 })
 
+test_that("the asset count is the other half of the bound", {
+  # The bound is min(m - 2, N). The wide fixture above never reaches the N
+  # half of it: with m = 5 the observation term binds at every k, so a
+  # regression that dropped N from the bound would go unnoticed there.
+  # A tall fixture puts N in charge.
+  tall <- R[1:60, ]                     # m = 60, N = 8, so m - 2 = 58 > N
+  N    <- ncol(tall)
+
+  expect_no_error(statistical.factor.model(tall, k = N))
+  expect_error(statistical.factor.model(tall, k = N + 1L),
+               "more factors than the data supports")
+
+  # k = N uses every component, so the residuals vanish and the factor
+  # covariance is the sample covariance. That is what makes N the ceiling.
+  S <- extractCovariance(statistical.factor.model(tall, k = N))
+  expect_equal(as.numeric(S),
+               as.numeric(stats::cov(zoo::coredata(tall))),
+               tolerance = 1e-12)
+})
+
 test_that("every accepted k yields a finite covariance", {
   # The bound exists for this reason, so check the reason rather than
   # only the boundary.
