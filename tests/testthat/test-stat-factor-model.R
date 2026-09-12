@@ -94,12 +94,19 @@ test_that("statistical.factor.model(k=2) produces a two-factor model with correc
     label = "residuals still has m rows")
 })
 
-test_that("statistical.factor.model() errors when observations < assets", {
-  # 4 rows, 5 columns: m (4) < N (5) must trigger the guard
-  too_few <- edhec5[1:4, ]
+test_that("statistical.factor.model() accepts fewer observations than assets", {
+  # This test asserted the m < N guard that this change removes, so it is
+  # rewritten rather than added to: the guard is the whole subject of both.
+  #
+  # The fit is a principal component decomposition, which needs k usable
+  # components and not m >= N. The bound that does apply is
+  # k <= min(m - 2, N), because extractCovariance() divides the residual
+  # sums of squares by m - k - 1.
+  too_few <- edhec5[1:4, ]        # 4 observations, 5 assets: m < N
+  expect_no_error(statistical.factor.model(too_few, k = 1))
   expect_error(
-    statistical.factor.model(too_few, k = 1),
-    "fewer observations than assets"
+    statistical.factor.model(too_few, k = 3),
+    "more factors than the data supports"
   )
 })
 
